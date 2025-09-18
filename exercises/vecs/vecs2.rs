@@ -19,6 +19,7 @@ fn vec_loop(mut v: Vec<i32>) -> Vec<i32> {
     v
 }
 
+
 fn vec_map(v: &Vec<i32>) -> Vec<i32> {
     v.iter().map(|element| {
         // TODO: Do the same thing as above - but instead of mutating the
