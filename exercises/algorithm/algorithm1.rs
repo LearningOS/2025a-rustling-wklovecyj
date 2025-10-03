@@ -2,8 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -15,7 +13,7 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new(t: T) -> Node<T> {
+    fn new(t: T) -> Node<T> {   //创建一个新节点，其下一个为空
         Node {
             val: t,
             next: None,
@@ -49,7 +47,7 @@ impl<T> LinkedList<T> {
         node.next = None;
         let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
         match self.end {
-            None => self.start = node_ptr,
+            None => self.start = node_ptr, //尾巴为空，相当于头没有，因为后续会赋予尾巴
             Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
         }
         self.end = node_ptr;
@@ -70,13 +68,51 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where T: PartialOrd + Copy,
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut merged_list = LinkedList::new();
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+        
+        while current_a.is_some() || current_b.is_some() {
+            match (current_a, current_b) {
+                (Some(ptr_a), Some(ptr_b)) => {
+                    let val_a = unsafe { &(*ptr_a.as_ptr()).val };
+                    let val_b = unsafe { &(*ptr_b.as_ptr()).val };
+
+                    if val_a <= val_b {
+                        merged_list.add(unsafe { std::ptr::read( val_a)});
+                        current_a = unsafe { (*ptr_a.as_ptr()).next };
+                    } else {
+                        merged_list.add(unsafe { std::ptr::read( val_b)});
+                        current_b = unsafe { (*ptr_b.as_ptr()).next };
+                    }
+                }
+                (Some(ptr_a), None) => {
+                    merged_list.add(unsafe { std::ptr::read( &(*ptr_a.as_ptr()).val)});
+                    current_a = unsafe { (*ptr_a.as_ptr()).next };
+                }
+                (None, Some(ptr_b)) => {
+                    merged_list.add(unsafe { std::ptr::read( &(*ptr_b.as_ptr()).val)});
+                    current_b = unsafe { (*ptr_b.as_ptr()).next };
+                }
+                (None, None) => {}
+            }
         }
+        //这里要处理剩余的节点
+        while current_a.is_some() {
+            if let Some(ptr_a) = current_a {
+                merged_list.add(unsafe { std::ptr::read( &(*ptr_a.as_ptr()).val)});
+                current_a = unsafe { (*ptr_a.as_ptr()).next };
+            }
+        }
+        while current_b.is_some() {
+            if let Some(ptr_b) = current_b {
+                merged_list.add(unsafe { std::ptr::read( &(*ptr_b.as_ptr()).val)});
+                current_b = unsafe { (*ptr_b.as_ptr()).next };
+            }
+        }
+        merged_list
 	}
 }
 

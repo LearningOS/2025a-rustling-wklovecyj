@@ -2,8 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -20,10 +18,10 @@ impl<T> Heap<T>
 where
     T: Default,
 {
-    pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
+    pub fn new(comparator: fn(&T, &T) -> bool) -> Self { //这里可以根据函数指针的类型，来决定是大顶堆还是小顶堆
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![T::default()],  //这里让索引从1开始更方便计算父节点和子节点的索引，0作为哨兵
             comparator,
         }
     }
@@ -38,27 +36,55 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut idx = self.count;
+
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx);
+
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            }
+            else {
+                break;
+            }
+        }
+
     }
 
-    fn parent_idx(&self, idx: usize) -> usize {
+    fn parent_idx(&self, idx: usize) -> usize { //获得父节点索引
         idx / 2
     }
 
-    fn children_present(&self, idx: usize) -> bool {
+    fn children_present(&self, idx: usize) -> bool { //判断是否有孩子节点,这里以左孩子为准
         self.left_child_idx(idx) <= self.count
     }
 
-    fn left_child_idx(&self, idx: usize) -> usize {
+    fn left_child_idx(&self, idx: usize) -> usize { //获得左孩子节点索引
         idx * 2
     }
 
-    fn right_child_idx(&self, idx: usize) -> usize {
+    fn right_child_idx(&self, idx: usize) -> usize { //获得右孩子节点索引
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
+    fn smallest_child_idx(&self, idx: usize) -> usize {  //这里没有判断是否有左子节点，因为这个方法是在确定有子节点的情况下调用的
         //TODO
-		0
+        let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+        
+        if right_idx <= self.count {
+            if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+                left_idx
+            } else {
+                right_idx
+            }
+        } else {
+            left_idx
+        }
+		
     }
 }
 
@@ -85,7 +111,23 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        let result = self.items.swap_remove(1); //移除堆顶元素并让最后一个元素到堆顶
+        self.count -= 1;
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let child_idx = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[idx]) {
+                self.items.swap(idx, child_idx);
+                idx = child_idx;
+            } else {
+                break;
+            }
+        }
+
+        Some(result)
     }
 }
 

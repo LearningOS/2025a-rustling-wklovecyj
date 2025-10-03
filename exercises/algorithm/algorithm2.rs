@@ -2,8 +2,6 @@
 	double linked list reverse
 	This problem requires you to reverse a doubly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -52,8 +50,8 @@ impl<T> LinkedList<T> {
         node.prev = self.end;
         let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
         match self.end {
-            None => self.start = node_ptr,
-            Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+            None => self.start = node_ptr, // 如果尾巴是空的，那么就说明这是第一个节点
+            Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr }, // 如果尾巴不是空的，那么就让尾巴指向新节点
         }
         self.end = node_ptr;
         self.length += 1;
@@ -74,6 +72,18 @@ impl<T> LinkedList<T> {
     }
 	pub fn reverse(&mut self){
 		// TODO
+        let mut current = self.start;
+        self.start = self.end;
+        self.end = current;
+        while let Some(mut node_ptr) = current { //这里一开始的current是开头
+            unsafe {
+                let node = node_ptr.as_mut();
+                let next = node.next; // 先把next存起来，防止丢失
+                node.next = node.prev;
+                node.prev = next;
+                current = next; // 这里的current变成了next
+            }
+        }
 	}
 }
 
